@@ -3,7 +3,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101827">
   <title>محفظتي | إدارة أموالك</title>
   <style>
@@ -17,20 +17,18 @@
     header {
       background: #101827;
       color: white;
-      padding: 24px 18px;
       text-align: center;
+      padding: 28px 16px;
     }
-    header h1 { margin: 0 0 8px; }
-    header p { margin: 0; color: #cbd5e1; }
-    main { max-width: 760px; margin: 24px auto; padding: 0 16px; }
+    main { max-width: 520px; margin: 28px auto; padding: 0 16px; }
     .card {
       background: white;
-      padding: 20px;
+      padding: 22px;
       border-radius: 16px;
       margin-bottom: 18px;
-      box-shadow: 0 4px 16px #1018270c;
+      box-shadow: 0 4px 18px #10182710;
     }
-    label { display: block; margin: 12px 0 6px; }
+    label { display: block; margin: 14px 0 7px; }
     input, button {
       width: 100%;
       padding: 13px;
@@ -42,11 +40,14 @@
       border: 0;
       background: #176b52;
       color: white;
-      margin-top: 14px;
+      margin-top: 12px;
       cursor: pointer;
     }
+    button.secondary { background: #334155; }
+    button:disabled { opacity: .6; cursor: wait; }
+    #message { line-height: 1.7; overflow-wrap: anywhere; }
     .muted { color: #64748b; font-size: 14px; }
-    #message { margin-top: 12px; }
+    [hidden] { display: none !important; }
     footer { text-align: center; padding: 20px; color: #64748b; }
   </style>
 </head>
@@ -57,14 +58,10 @@
   </header>
 
   <main>
-    <section class="card">
+    <section class="card" id="authCard">
       <h2>أهلًا بك في محفظتي</h2>
-      <p>سجّل دخولك أو أنشئ حسابًا للبدء.</p>
-      <p class="muted">نسخة أولية قيد التطوير — لا تُدخل معلومات مالية حساسة.</p>
-    </section>
+      <p class="muted">أنشئ حسابًا أو سجّل الدخول للمتابعة.</p>
 
-    <section class="card">
-      <h2>إنشاء حساب أو تسجيل الدخول</h2>
       <form id="authForm">
         <label for="email">البريد الإلكتروني</label>
         <input id="email" type="email" autocomplete="email" required>
@@ -73,19 +70,28 @@
         <input id="password" type="password" minlength="6"
           autocomplete="current-password" required>
 
-        <button type="submit">دخول / إنشاء حساب</button>
+        <button id="loginBtn" type="submit">تسجيل الدخول</button>
+        <button id="signupBtn" class="secondary" type="button">
+          إنشاء حساب جديد
+        </button>
       </form>
-      <button id="googleBtn" type="button">المتابعة باستخدام Google</button>
-      <p id="message" role="status"></p>
+
+      <button id="googleBtn" class="secondary" type="button">
+        المتابعة باستخدام Google
+      </button>
+      <button id="resetBtn" class="secondary" type="button">
+        نسيت كلمة المرور؟
+      </button>
+      <p id="message" role="status" aria-live="polite"></p>
     </section>
 
-    <section class="card">
-      <h2>ماذا ستجد هنا؟</h2>
-      <ul>
-        <li>حساب شخصي لكل مستخدم.</li>
-        <li>سجل للمعاملات بعد ربط قاعدة البيانات.</li>
-        <li>واجهة قابلة للتطوير للموبايل والكمبيوتر.</li>
-      </ul>
+    <section class="card" id="accountCard" hidden>
+      <h2>حسابك في محفظتي</h2>
+      <p id="userEmail"></p>
+      <p class="muted">
+        تم تسجيل الدخول. سنضيف سجل الدخل والمصروفات في الخطوة التالية.
+      </p>
+      <button id="logoutBtn">تسجيل الخروج</button>
     </section>
   </main>
 
@@ -95,57 +101,141 @@
     import { createClient } from
       'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    const SUPABASE_URL = 'https://wygqkmiwggfscwkdvgth.supabase.co';
+    const SUPABASE_URL =
+      'https://wygqkmiwggfscwkdvgth.supabase.co';
 
-    // سنضع المفتاح العام (publishable/anon) بعد الخطوة التالية.
-const SUPABASE_PUBLIC_KEY = 'sb_publishable_F81NJjLtbaTNFqlYge81kA_gRYzc3UX';
-    const message = document.getElementById('message');
-    const form = document.getElementById('authForm');
-    const googleBtn = document.getElementById('googleBtn');
+    const SUPABASE_PUBLIC_KEY =
+      'sb_publishable_F81NJjLtbaTNFqlYge81kA_gRYzc3UX';
 
-    if (SUPABASE_PUBLIC_KEY === 'ADD_YOUR_SUPABASE_PUBLIC_KEY') {
-      message.textContent =
-        'الواجهة جاهزة. بقي ربط مفتاح Supabase العام لتفعيل تسجيل الدخول.';
-      form.addEventListener('submit', event => {
-        event.preventDefault();
-        message.textContent = 'سنفعّل تسجيل الدخول بعد إعداد المفتاح.';
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLIC_KEY
+    );
+
+    const $ = id => document.getElementById(id);
+    const form = $('authForm');
+    const message = $('message');
+    const loginBtn = $('loginBtn');
+    const signupBtn = $('signupBtn');
+    const googleBtn = $('googleBtn');
+    const resetBtn = $('resetBtn');
+
+    function say(text) {
+      message.textContent = text;
+    }
+
+    function busy(value) {
+      [loginBtn, signupBtn, googleBtn, resetBtn].forEach(button => {
+        button.disabled = value;
       });
-      googleBtn.addEventListener('click', () => {
-        message.textContent = 'سنفعّل Google بعد إكمال إعداد الربط.';
-      });
-    } else {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+    }
 
-      form.addEventListener('submit', async event => {
-        event.preventDefault();
-        message.textContent = 'جارٍ التحقق...';
+    function showAccount(user) {
+      $('authCard').hidden = Boolean(user);
+      $('accountCard').hidden = !user;
+      if (user) $('userEmail').textContent = user.email || '';
+    }
 
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
+    async function runAuth(action) {
+      const email = $('email').value.trim();
+      const password = $('password').value;
 
-        const result = await supabase.auth.signInWithPassword({ email, password });
+      if (!email) {
+        say('اكتب بريدك الإلكتروني أولًا.');
+        return;
+      }
 
-        if (result.error) {
-          if (result.error.message.toLowerCase().includes('invalid login')) {
-            message.textContent =
-              'تعذّر الدخول. إذا لم يكن لديك حساب، سنضيف خيار إنشاء الحساب في الخطوة التالية.';
+      if (action !== 'reset' && password.length < 6) {
+        say('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
+        return;
+      }
+
+      busy(true);
+      say('جارٍ تنفيذ الطلب...');
+
+      try {
+        if (action === 'signup') {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin
+            }
+          });
+          if (error) throw error;
+
+          if (data.session) {
+            showAccount(data.user);
+            say('تم إنشاء الحساب وتسجيل الدخول بنجاح.');
           } else {
-            message.textContent = 'تعذّر تسجيل الدخول. تحقق من الإعدادات وحاول مجددًا.';
+            say('تم إرسال طلب إنشاء الحساب. افحص بريدك لتأكيد الحساب، ثم سجّل الدخول.');
           }
-          return;
         }
 
-        message.textContent = 'تم تسجيل الدخول بنجاح.';
-      });
+        if (action === 'login') {
+          const { data, error } =
+            await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
 
-      googleBtn.addEventListener('click', async () => {
+          showAccount(data.user);
+          say('تم تسجيل الدخول بنجاح.');
+        }
+
+        if (action === 'reset') {
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin
+          });
+          if (error) throw error;
+          say('إذا كان البريد صالحًا، ستصلك تعليمات إعادة تعيين كلمة المرور.');
+        }
+      } catch (error) {
+        console.error(error);
+        say('لم تنجح العملية. تحقق من البريد وكلمة المرور وإعدادات Supabase، ثم حاول مجددًا.');
+      } finally {
+        busy(false);
+      }
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      runAuth('login');
+    });
+
+    signupBtn.addEventListener('click', () => runAuth('signup'));
+    resetBtn.addEventListener('click', () => runAuth('reset'));
+
+    googleBtn.addEventListener('click', async () => {
+      busy(true);
+      say('جارٍ فتح تسجيل الدخول باستخدام Google...');
+      try {
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: { redirectTo: window.location.origin }
         });
-        if (error) message.textContent = 'تعذّر بدء تسجيل الدخول باستخدام Google.';
-      });
-    }
+        if (error) throw error;
+      } catch (error) {
+        console.error(error);
+        say('تعذّر بدء تسجيل الدخول. تحقق من إعدادات Google في Supabase.');
+        busy(false);
+      }
+    });
+
+    $('logoutBtn').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        say('تعذّر تسجيل الخروج. حاول مرة أخرى.');
+        return;
+      }
+      showAccount(null);
+      say('تم تسجيل الخروج.');
+    });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    showAccount(session?.user || null);
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      showAccount(session?.user || null);
+    });
   </script>
 </body>
 </html>
