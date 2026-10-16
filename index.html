@@ -4,237 +4,276 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101827">
+  <meta name="theme-color" content="#0b1220">
   <title>محفظتي | إدارة أموالك</title>
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --panel: #121d30;
+      --line: #293850;
+      --text: #f5f7fb;
+      --muted: #aab7ca;
+      --accent: #45d6a0;
+    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f6fb;
-      color: #172033;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #18334a, var(--bg) 55%);
+      color: var(--text);
+      font-family: system-ui, Arial, sans-serif;
     }
-    header {
-      background: #101827;
-      color: white;
-      text-align: center;
-      padding: 28px 16px;
-    }
-    main { max-width: 520px; margin: 28px auto; padding: 0 16px; }
+    .wrap { width: min(920px, 92%); margin: auto; padding: 28px 0 48px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 26px; }
+    .brand { font-size: 25px; font-weight: 800; }
+    .brand span { color: var(--accent); }
+    .tag { color: var(--muted); font-size: 13px; }
     .card {
-      background: white;
-      padding: 22px;
-      border-radius: 16px;
-      margin-bottom: 18px;
-      box-shadow: 0 4px 18px #10182710;
+      background: rgba(18,29,48,.96);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: clamp(20px, 5vw, 36px);
+      box-shadow: 0 18px 55px #0003;
     }
-    label { display: block; margin: 14px 0 7px; }
-    input, button {
-      width: 100%;
-      padding: 13px;
-      border-radius: 9px;
-      font-size: 16px;
+    h1 { font-size: clamp(25px, 5vw, 38px); margin: 0 0 10px; }
+    h2 { font-size: 21px; margin-top: 0; }
+    p { color: var(--muted); line-height: 1.8; }
+    label { display: block; margin: 16px 0 7px; font-size: 14px; }
+    input {
+      width: 100%; padding: 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: #0b1424;
+      color: white; font: inherit; outline: none;
     }
-    input { border: 1px solid #d4dbe6; }
+    input:focus { border-color: var(--accent); }
     button {
-      border: 0;
-      background: #176b52;
-      color: white;
-      margin-top: 12px;
-      cursor: pointer;
+      border: 0; border-radius: 12px; padding: 13px 16px;
+      font: inherit; font-weight: 700; cursor: pointer;
     }
-    button.secondary { background: #334155; }
     button:disabled { opacity: .6; cursor: wait; }
-    #message { line-height: 1.7; overflow-wrap: anywhere; }
-    .muted { color: #64748b; font-size: 14px; }
-    [hidden] { display: none !important; }
-    footer { text-align: center; padding: 20px; color: #64748b; }
+    .primary { background: var(--accent); color: #082219; width: 100%; margin-top: 18px; }
+    .google, .secondary { background: #223149; color: white; width: 100%; margin-top: 10px; }
+    .links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 16px; }
+    a { color: var(--accent); cursor: pointer; text-decoration: none; }
+    .status { margin-top: 16px; padding: 12px; border-radius: 10px; background: #0b1424; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .hidden { display: none !important; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 22px; }
+    .tile { border: 1px solid var(--line); background: #0b1424; padding: 18px; border-radius: 15px; }
+    .tile strong { display: block; font-size: 20px; margin-bottom: 8px; }
+    footer { text-align: center; color: var(--muted); padding-top: 24px; font-size: 13px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>💳 محفظتي</h1>
-    <p>إدارة أموالك بطريقة بسيطة ومنظمة</p>
-  </header>
+  <main class="wrap">
+    <header>
+      <div class="brand">💳 <span>محفظتي</span></div>
+      <div class="tag">إدارة أموالك بطريقة بسيطة ومنظمة</div>
+    </header>
 
-  <main>
-    <section class="card" id="authCard">
-      <h2>أهلًا بك في محفظتي</h2>
-      <p class="muted">أنشئ حسابًا أو سجّل الدخول للمتابعة.</p>
+    <section id="authPanel" class="card">
+      <h1>أهلًا بك في محفظتي</h1>
+      <p>أنشئ حسابك أو سجّل الدخول للوصول إلى مساحتك المالية.</p>
 
       <form id="authForm">
         <label for="email">البريد الإلكتروني</label>
-        <input id="email" type="email" autocomplete="email" required>
+        <input id="email" type="email" autocomplete="email" required placeholder="name@example.com">
 
         <label for="password">كلمة المرور (6 أحرف على الأقل)</label>
-        <input id="password" type="password" minlength="6"
-          autocomplete="current-password" required>
+        <input id="password" type="password" minlength="6" autocomplete="current-password" required placeholder="كلمة المرور">
 
-        <button id="loginBtn" type="submit">تسجيل الدخول</button>
-        <button id="signupBtn" class="secondary" type="button">
-          إنشاء حساب جديد
-        </button>
+        <button id="loginBtn" class="primary" type="submit">تسجيل الدخول</button>
+        <button id="signupBtn" class="secondary" type="button">إنشاء حساب جديد</button>
       </form>
 
-      <button id="googleBtn" class="secondary" type="button">
-        المتابعة باستخدام Google
-      </button>
-      <button id="resetBtn" class="secondary" type="button">
-        نسيت كلمة المرور؟
-      </button>
-      <p id="message" role="status" aria-live="polite"></p>
+      <button id="googleBtn" class="google" type="button">المتابعة باستخدام Google</button>
+      <div class="links">
+        <a id="resetLink">نسيت كلمة المرور؟</a>
+      </div>
+      <div id="authStatus" class="status" role="status" aria-live="polite">جارٍ تجهيز تسجيل الدخول...</div>
     </section>
 
-    <section class="card" id="accountCard" hidden>
-      <h2>حسابك في محفظتي</h2>
-      <p id="userEmail"></p>
-      <p class="muted">
-        تم تسجيل الدخول. سنضيف سجل الدخل والمصروفات في الخطوة التالية.
-      </p>
-      <button id="logoutBtn">تسجيل الخروج</button>
+    <section id="accountPanel" class="card hidden">
+      <h1>مرحبًا بك 👋</h1>
+      <p>تم تسجيل الدخول إلى حسابك في محفظتي.</p>
+      <div class="grid">
+        <div class="tile">
+          <strong>حسابك</strong>
+          <span id="accountEmail"></span>
+        </div>
+        <div class="tile">
+          <strong>حالة النظام</strong>
+          <span>تسجيل الدخول متصل</span>
+        </div>
+      </div>
+      <p>هذه نسخة أولية. لم يتم تفعيل الأرصدة أو التحويلات المالية الحقيقية بعد.</p>
+      <button id="logoutBtn" class="primary" type="button">تسجيل الخروج</button>
+      <div id="accountStatus" class="status" role="status" aria-live="polite"></div>
     </section>
+
+    <footer>محفظتي © 2026 — بيانات الدخول تُدار عبر Supabase</footer>
   </main>
 
-  <footer>محفظتي © 2026</footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://wygqkmiwggfscwkdvgth.supabase.co';
+    const SUPABASE_PUBLIC_KEY = 'sb_publishable_F81NJjLtbaTNFqlYge81kA_gRYzc3UX';
 
-  <script type="module">
-    import { createClient } from
-      'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    // رابط الموقع المنشور، وليس localhost أو أصل النطاق فقط.
+    const APP_URL = 'https://tjksgaza-sudo.github.io/mahfazati/';
 
-    const SUPABASE_URL =
-      'https://wygqkmiwggfscwkdvgth.supabase.co';
+    const authPanel = document.getElementById('authPanel');
+    const accountPanel = document.getElementById('accountPanel');
+    const authStatus = document.getElementById('authStatus');
+    const accountStatus = document.getElementById('accountStatus');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const googleBtn = document.getElementById('googleBtn');
+    const resetLink = document.getElementById('resetLink');
 
-    const SUPABASE_PUBLIC_KEY =
-      'sb_publishable_F81NJjLtbaTNFqlYge81kA_gRYzc3UX';
+    let supabaseClient;
 
-    const supabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLIC_KEY
-    );
-
-    const $ = id => document.getElementById(id);
-    const form = $('authForm');
-    const message = $('message');
-    const loginBtn = $('loginBtn');
-    const signupBtn = $('signupBtn');
-    const googleBtn = $('googleBtn');
-    const resetBtn = $('resetBtn');
-
-    function say(text) {
-      message.textContent = text;
+    function showMessage(element, message, isError = false) {
+      element.textContent = message;
+      element.style.color = isError ? '#ff9b9b' : '#45d6a0';
     }
 
-    function busy(value) {
-      [loginBtn, signupBtn, googleBtn, resetBtn].forEach(button => {
-        button.disabled = value;
-      });
+    function setBusy(busy) {
+      loginBtn.disabled = busy;
+      signupBtn.disabled = busy;
+      googleBtn.disabled = busy;
+      resetLink.style.pointerEvents = busy ? 'none' : 'auto';
     }
 
-    function showAccount(user) {
-      $('authCard').hidden = Boolean(user);
-      $('accountCard').hidden = !user;
-      if (user) $('userEmail').textContent = user.email || '';
+    function getCredentials() {
+      return {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+      };
     }
 
     async function runAuth(action) {
-      const email = $('email').value.trim();
-      const password = $('password').value;
-
-      if (!email) {
-        say('اكتب بريدك الإلكتروني أولًا.');
-        return;
-      }
-
-      if (action !== 'reset' && password.length < 6) {
-        say('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
-        return;
-      }
-
-      busy(true);
-      say('جارٍ تنفيذ الطلب...');
-
+      setBusy(true);
       try {
-        if (action === 'signup') {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: window.location.origin
-            }
-          });
-          if (error) throw error;
-
-          if (data.session) {
-            showAccount(data.user);
-            say('تم إنشاء الحساب وتسجيل الدخول بنجاح.');
-          } else {
-            say('تم إرسال طلب إنشاء الحساب. افحص بريدك لتأكيد الحساب، ثم سجّل الدخول.');
-          }
-        }
-
-        if (action === 'login') {
-          const { data, error } =
-            await supabase.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-
-          showAccount(data.user);
-          say('تم تسجيل الدخول بنجاح.');
-        }
-
-        if (action === 'reset') {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin
-          });
-          if (error) throw error;
-          say('إذا كان البريد صالحًا، ستصلك تعليمات إعادة تعيين كلمة المرور.');
-        }
+        await action();
       } catch (error) {
-        console.error(error);
-        say('لم تنجح العملية. تحقق من البريد وكلمة المرور وإعدادات Supabase، ثم حاول مجددًا.');
+        showMessage(authStatus, error.message || 'حدث خطأ غير متوقع.', true);
       } finally {
-        busy(false);
+        setBusy(false);
       }
     }
 
-    form.addEventListener('submit', event => {
-      event.preventDefault();
-      runAuth('login');
-    });
-
-    signupBtn.addEventListener('click', () => runAuth('signup'));
-    resetBtn.addEventListener('click', () => runAuth('reset'));
-
-    googleBtn.addEventListener('click', async () => {
-      busy(true);
-      say('جارٍ فتح تسجيل الدخول باستخدام Google...');
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin }
-        });
-        if (error) throw error;
-      } catch (error) {
-        console.error(error);
-        say('تعذّر بدء تسجيل الدخول. تحقق من إعدادات Google في Supabase.');
-        busy(false);
-      }
-    });
-
-    $('logoutBtn').addEventListener('click', async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        say('تعذّر تسجيل الخروج. حاول مرة أخرى.');
+    async function init() {
+      if (!window.supabase) {
+        showMessage(authStatus, 'تعذّر تحميل مكتبة تسجيل الدخول. تحقق من اتصال الإنترنت.', true);
         return;
       }
-      showAccount(null);
-      say('تم تسجيل الخروج.');
+
+      supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLIC_KEY,
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        }
+      );
+
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        renderSession(session);
+      });
+
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        showMessage(authStatus, error.message, true);
+        return;
+      }
+
+      renderSession(data.session);
+      if (!data.session) {
+        showMessage(authStatus, 'يمكنك تسجيل الدخول بالبريد الإلكتروني أو Google.');
+      }
+    }
+
+    function renderSession(session) {
+      if (session?.user) {
+        authPanel.classList.add('hidden');
+        accountPanel.classList.remove('hidden');
+        document.getElementById('accountEmail').textContent =
+          session.user.email || 'حساب Google';
+      } else {
+        accountPanel.classList.add('hidden');
+        authPanel.classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('authForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await runAuth(async () => {
+        const { email, password } = getCredentials();
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showMessage(authStatus, 'تم تسجيل الدخول بنجاح.');
+      });
     });
 
-    const { data: { session } } = await supabase.auth.getSession();
-    showAccount(session?.user || null);
+    signupBtn.addEventListener('click', async () => {
+      await runAuth(async () => {
+        const { email, password } = getCredentials();
+        if (password.length < 6) throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      showAccount(session?.user || null);
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: APP_URL }
+        });
+
+        if (error) throw error;
+        if (data.session) {
+          showMessage(authStatus, 'تم إنشاء الحساب وتسجيل الدخول.');
+        } else {
+          showMessage(authStatus, 'تم إرسال طلب إنشاء الحساب. افحص بريدك الإلكتروني لتأكيد الحساب إن طُلب منك ذلك.');
+        }
+      });
+    });
+
+    googleBtn.addEventListener('click', async () => {
+      await runAuth(async () => {
+        showMessage(authStatus, 'جارٍ فتح تسجيل الدخول باستخدام Google...');
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: APP_URL }
+        });
+        if (error) throw error;
+      });
+    });
+
+    resetLink.addEventListener('click', async () => {
+      await runAuth(async () => {
+        const email = document.getElementById('email').value.trim();
+        if (!email) throw new Error('اكتب بريدك الإلكتروني أولًا، ثم اضغط نسيت كلمة المرور.');
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: APP_URL
+        });
+        if (error) throw error;
+        showMessage(authStatus, 'إذا كان البريد مسجلًا، فستصلك رسالة لاستعادة كلمة المرور.');
+      });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        showMessage(authStatus, 'تم تسجيل الخروج.');
+      } catch (error) {
+        showMessage(accountStatus, error.message || 'تعذّر تسجيل الخروج.', true);
+      }
+    });
+
+    init().catch(error => {
+      showMessage(authStatus, error.message || 'تعذّر الاتصال بخدمة تسجيل الدخول.', true);
     });
   </script>
 </body>
