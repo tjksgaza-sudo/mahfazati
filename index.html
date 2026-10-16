@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>محفظتي | إدارة أموالك</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fb;
+      color: #172033;
+    }
+    header {
+      background: #101827;
+      color: white;
+      padding: 24px 18px;
+      text-align: center;
+    }
+    header h1 { margin: 0 0 8px; }
+    header p { margin: 0; color: #cbd5e1; }
+    main { max-width: 760px; margin: 24px auto; padding: 0 16px; }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px #1018270c;
+    }
+    label { display: block; margin: 12px 0 6px; }
+    input, button {
+      width: 100%;
+      padding: 13px;
+      border-radius: 9px;
+      font-size: 16px;
+    }
+    input { border: 1px solid #d4dbe6; }
+    button {
+      border: 0;
+      background: #176b52;
+      color: white;
+      margin-top: 14px;
+      cursor: pointer;
+    }
+    .muted { color: #64748b; font-size: 14px; }
+    #message { margin-top: 12px; }
+    footer { text-align: center; padding: 20px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💳 محفظتي</h1>
+    <p>إدارة أموالك بطريقة بسيطة ومنظمة</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>أهلًا بك في محفظتي</h2>
+      <p>سجّل دخولك أو أنشئ حسابًا للبدء.</p>
+      <p class="muted">نسخة أولية قيد التطوير — لا تُدخل معلومات مالية حساسة.</p>
+    </section>
+
+    <section class="card">
+      <h2>إنشاء حساب أو تسجيل الدخول</h2>
+      <form id="authForm">
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" type="email" autocomplete="email" required>
+
+        <label for="password">كلمة المرور (6 أحرف على الأقل)</label>
+        <input id="password" type="password" minlength="6"
+          autocomplete="current-password" required>
+
+        <button type="submit">دخول / إنشاء حساب</button>
+      </form>
+      <button id="googleBtn" type="button">المتابعة باستخدام Google</button>
+      <p id="message" role="status"></p>
+    </section>
+
+    <section class="card">
+      <h2>ماذا ستجد هنا؟</h2>
+      <ul>
+        <li>حساب شخصي لكل مستخدم.</li>
+        <li>سجل للمعاملات بعد ربط قاعدة البيانات.</li>
+        <li>واجهة قابلة للتطوير للموبايل والكمبيوتر.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>محفظتي © 2026</footer>
+
+  <script type="module">
+    import { createClient } from
+      'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const SUPABASE_URL = 'https://wygqkmiwggfscwkdvgth.supabase.co';
+
+    // سنضع المفتاح العام (publishable/anon) بعد الخطوة التالية.
+    const SUPABASE_PUBLIC_KEY = 'ADD_YOUR_SUPABASE_PUBLIC_KEY';
+
+    const message = document.getElementById('message');
+    const form = document.getElementById('authForm');
+    const googleBtn = document.getElementById('googleBtn');
+
+    if (SUPABASE_PUBLIC_KEY === 'ADD_YOUR_SUPABASE_PUBLIC_KEY') {
+      message.textContent =
+        'الواجهة جاهزة. بقي ربط مفتاح Supabase العام لتفعيل تسجيل الدخول.';
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        message.textContent = 'سنفعّل تسجيل الدخول بعد إعداد المفتاح.';
+      });
+      googleBtn.addEventListener('click', () => {
+        message.textContent = 'سنفعّل Google بعد إكمال إعداد الربط.';
+      });
+    } else {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        message.textContent = 'جارٍ التحقق...';
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        const result = await supabase.auth.signInWithPassword({ email, password });
+
+        if (result.error) {
+          if (result.error.message.toLowerCase().includes('invalid login')) {
+            message.textContent =
+              'تعذّر الدخول. إذا لم يكن لديك حساب، سنضيف خيار إنشاء الحساب في الخطوة التالية.';
+          } else {
+            message.textContent = 'تعذّر تسجيل الدخول. تحقق من الإعدادات وحاول مجددًا.';
+          }
+          return;
+        }
+
+        message.textContent = 'تم تسجيل الدخول بنجاح.';
+      });
+
+      googleBtn.addEventListener('click', async () => {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin }
+        });
+        if (error) message.textContent = 'تعذّر بدء تسجيل الدخول باستخدام Google.';
+      });
+    }
+  </script>
+</body>
+</html>
